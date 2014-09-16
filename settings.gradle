@@ -1,0 +1,1 @@
+include ':app', ':javaApp', ':javaLibrary', ':app2'
