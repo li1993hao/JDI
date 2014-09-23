@@ -14,7 +14,6 @@ import com.tiptimes.tp.controller.Controller_Activity;
 public class HomeController extends Controller_Activity {
     private Button IB_bnt;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
