@@ -2,16 +2,13 @@ package com.tiptimes.tp.common;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
-
-import com.tiptimes.tp.controller.Application;
 
 /**
  * @author haoli
  */
-public abstract class ImageLoadListenerAdapter implements OnLoadListener<BitmapDrawable>{
+public abstract class ImageLoadListenerAdapter implements OnLoadListener<Bitmap>{
 	@SuppressLint("HandlerLeak")
 	private Handler mhandler = new Handler(Looper.getMainLooper()){
 		public void handleMessage(android.os.Message msg) {
@@ -52,9 +49,9 @@ public abstract class ImageLoadListenerAdapter implements OnLoadListener<BitmapD
 	}
 
 	@Override
-	public void loaded(BitmapDrawable image, String url) {
+	public void loaded(Bitmap image, String url) {
 	    //  Application.getBitmapCache().put(url, image.getBitmap());
-		mhandler.sendMessage(mhandler.obtainMessage(2, image.getBitmap()));
+		mhandler.sendMessage(mhandler.obtainMessage(2, image));
 	}
 
 }

@@ -1,17 +1,18 @@
 package com.tiptimes.tp.common;
 
+import com.tiptimes.R;
+import com.tiptimes.tp.annotation.A;
+import com.tiptimes.tp.annotation.C;
+import com.tiptimes.tp.controller.Controller;
+import com.tiptimes.tp.util.L;
+import com.tiptimes.tp.widget.ActionBinder;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.tiptimes.R;
-import com.tiptimes.tp.annotation.Action;
-import com.tiptimes.tp.controller.Controller;
-import com.tiptimes.tp.util.L;
-import com.tiptimes.tp.widget.ActionBinder;
 
 /**
  * 动态绑定组件
@@ -22,6 +23,7 @@ import com.tiptimes.tp.widget.ActionBinder;
 @SuppressWarnings("rawtypes")
 public class DynamicCode {	
 	private static Map<String, Integer>viewIdMap;//R文件中id和id名称的映射
+
 
 	static{
         /**
@@ -43,16 +45,31 @@ public class DynamicCode {
 		}
 	}
 
+    public int getLayoutId() {
+        return layoutId;
+    }
 
+    public String getModuleName() {
+        return moduleName;
+    }
 
-
-	private HashMap<ActionDeal, Field> actionDealMap = new HashMap<ActionDeal, Field>();
+    private HashMap<ActionDeal, Field> actionDealMap = new HashMap<ActionDeal, Field>();
 
     private Controller mController;
-	
-	
+	private String moduleName;
+    private int  layoutId;
+
 	public DynamicCode(Controller controller){
 		mController = controller;
+        String[] packageStrs = mController.getClass().getPackage().getName()
+                .split("\\.");
+        moduleName = packageStrs[packageStrs.length - 1]; //模块名称
+        if(controller.getClass().isAnnotationPresent(C.class)){
+            C ac = controller.getClass().getAnnotation(C.class);
+            layoutId = ac.Layout();
+        }else{
+            L.e(L.TAG,controller.getClass().getSimpleName()+"没声明布局文件!");
+        }
 	}
 	/**
 	 * 界面控件的绑定
@@ -82,9 +99,7 @@ public class DynamicCode {
 				IBFields.add(fields[i]);
 			}
 		}
-		String[] packageStrs = mController.getClass().getPackage().getName()
-				.split("\\.");
-		String moduleName = packageStrs[packageStrs.length - 1]; //模块名称
+
 
 		for (int i = 0; i < IBFields.size(); i++) {
 			Field field = IBFields.get(i);
@@ -118,8 +133,8 @@ public class DynamicCode {
      */
 	 private void bindAction(ArrayList<Field> fields){
 		for(int i=0; i<fields.size(); i++){
-			if(fields.get(i).isAnnotationPresent(Action.class)){
-				Action aa = fields.get(i).getAnnotation(Action.class);
+			if(fields.get(i).isAnnotationPresent(A.class)){
+				A aa = fields.get(i).getAnnotation(A.class);
 				String actionListenerStr  = aa.actionListener();
 				if(!actionListenerStr.equals("")){
                     //有要绑定的控件
@@ -203,10 +218,10 @@ public class DynamicCode {
 				return;
 			}
 
-            if(!field.isAnnotationPresent(Action.class)){
+            if(!field.isAnnotationPresent(A.class)){
                 L.e(L.TAG,"actionDeal参数必须有action注解!");
             }else{
-                Action aa = field.getAnnotation(Action.class);
+                A aa = field.getAnnotation(A.class);
                 actionInfo.setUrl(aa.url());
                 actionInfo.setControllerID(mController.hashCode());
                 actionInfo.setParams(params);
@@ -215,6 +230,4 @@ public class DynamicCode {
                 ThreadPoolManager.getInstance().execActions(actionInfo);
             }
 	}
-	 
-	 
 }

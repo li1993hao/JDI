@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
  * @author haoli
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Action {
-	String url() ;
-	String actionListener() default "";
+@Target(ElementType.TYPE)
+public @interface C {
+    int Layout();
 }

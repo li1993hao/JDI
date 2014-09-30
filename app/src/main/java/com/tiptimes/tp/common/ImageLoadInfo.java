@@ -1,7 +1,6 @@
 package com.tiptimes.tp.common;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.widget.ImageView;
 
 import com.tiptimes.tp.controller.Controller;
@@ -14,9 +13,9 @@ public class ImageLoadInfo  {
 	private int controllerID; //控制器id
 	private String url; //请求url
 	private boolean hasProgress; //是否有进度条
-	private OnLoadListener<BitmapDrawable> onImageLoadListener; //回调信息监听者
+	private OnLoadListener<Bitmap> onImageLoadListener; //回调信息监听者
 	private Bitmap placeHoldImage; //占位图片
-	private ImageView imageView;
+	private ImageView imageView; //要填充的imageView
 	
 	public ImageView getImageView() {
 		return imageView;
@@ -61,11 +60,20 @@ public class ImageLoadInfo  {
 		this.placeHoldImage = null;
 		this.url = url;
 	}
-	
+
+    public ImageLoadInfo(Controller controller,ImageView imageView, String url,Bitmap placeHoldImage){
+        this.controllerID = controller.hashCode();
+        this.imageView = imageView;
+        this.hasProgress = false;
+        this.onImageLoadListener = new SimpleImageLoadListener();
+        this.placeHoldImage = placeHoldImage;
+        this.url = url;
+    }
+
 	public static class Builder {
 		private String url;
 		private boolean hasProgress;
-		private OnLoadListener<BitmapDrawable> onImageLoadListener;
+		private OnLoadListener<Bitmap> onImageLoadListener;
 		private Bitmap placeHoldImage;
 		private ImageView imageView;
 		private int controllerID;
@@ -87,7 +95,7 @@ public class ImageLoadInfo  {
 			this.hasProgress = hasProgress;
 			return this;
 		}
-		public Builder setOnImageLoadListener( OnLoadListener<BitmapDrawable>  onImageLoadListener) {
+		public Builder setOnImageLoadListener( OnLoadListener<Bitmap>  onImageLoadListener) {
 			this.onImageLoadListener =  onImageLoadListener ;
 			return this;
 		}
@@ -112,7 +120,7 @@ public class ImageLoadInfo  {
 	public boolean hasProgress() {
 		return hasProgress;
 	}
-	public OnLoadListener<BitmapDrawable> getOnImageLoadListener() {
+	public OnLoadListener<Bitmap> getOnImageLoadListener() {
 		return onImageLoadListener;
 	}
 	public Bitmap getPlaceHoldImage() {
@@ -124,4 +132,11 @@ public class ImageLoadInfo  {
 	public void setControllerID(int controllerID) {
 		this.controllerID = controllerID;
 	}
+
+
+    public void startLoad(){
+        ThreadPoolManager.getInstance().execImageDownload(this);
+    }
+
+
 }

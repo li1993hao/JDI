@@ -23,6 +23,8 @@ public class Constants {
     /**
      * 缓存和临时文件夹路径
      */
-	 public final  static String IMAGECACHE_DIR = "/tiptime/cache";
-	 public final static String FILE_TEMP = "/tiptime/temp";
+	 public final static String IMAGECACHE_DIR = "/tiptimes/img"; //图片缓冲路径
+	 public final static String PRE_DIR = "/tiptimes/preference"; //配置文件或者轻量级数据缓冲路径
+     public final static String FILE_DIR = "/tiptimes/file"; //文件存储路径
+    public  final static String TEMP_DIR = "/tiptimes/temp";
 }

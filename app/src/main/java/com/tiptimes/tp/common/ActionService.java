@@ -42,8 +42,7 @@ public class ActionService implements Runnable ,ControllerObserver {
 		if(res.isNormal()){
             //正常返回，网络连接成功，并且请求数据成功
 			if(actionInfo.getDataClass().equals(String.class)){
-                //请求数据类型为string,则把json字符串返回
-                //当请求数据信息比较复杂，要手动解析时设置
+                //请求数据类型为string,不对服务器返回数据做任何解析，直接返回
 				actionBundle.isNomal = true;
 				actionBundle.data = res.getInfo();
 			}else{
@@ -63,10 +62,7 @@ public class ActionService implements Runnable ,ControllerObserver {
 						}else if(actionInfo.getDataClass().equals(NoData.class)){
                             //没有返回数据
                             actionBundle.data=new NoData();
-						}else if(actionInfo.getDataClass().equals(String.class)){
-                            //返回json字符串
-                            actionBundle.data = json.get(Constants.SERVER_JSON_STAT_DATA);
-                        }else{
+						}else{
                             //返回bto对象
                             actionBundle.data=JSON.parseObject(json.get(Constants.SERVER_JSON_STAT_DATA).toString(), actionInfo.getDataClass());
                         }

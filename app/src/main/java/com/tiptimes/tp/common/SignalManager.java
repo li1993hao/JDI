@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.tiptimes.tp.annotation.SignalFilter;
-
 /**
  * 信号管理器
  * @author tiptimes  haoli
@@ -24,7 +22,7 @@ public class SignalManager {
      * 发送信号
      * @param signal
      */
-	public static void SendSignal(Signal signal){
+	public static void sendSignal(Signal signal){
 		msignalManager.mSendSignal(signal);
 	}
 
@@ -46,10 +44,14 @@ public class SignalManager {
 
 
 	public void mSendSignal(Signal signal) {
-		signalList.add(signal);
+        boolean flag = false;
 		for(int i=0; i<sdList.size(); i++){
-			sendToDeal(sdList.get(i));
+            flag = sendToDeal(sdList.get(i), signal);
 		}
+
+        if(!flag){
+            signalList.add(signal);
+        }
 	}
 
     /**
@@ -69,6 +71,43 @@ public class SignalManager {
 		sdList.remove(deal);
 	}
 
+
+
+
+    /**
+     * 当新的signal加入的时候调用此方法
+     * @param deal
+     * @param signal
+     */
+    private boolean sendToDeal(SignalListener deal, Signal signal){
+        boolean result = false;
+        try {
+            Method handleMethod = deal.getClass().getMethod("handleSignal", Signal.class);//signal接受方法
+            handleMethod.setAccessible(true);
+            if(handleMethod.isAnnotationPresent(com.tiptimes.tp.annotation.S.class)){
+                com.tiptimes.tp.annotation.S asignal=handleMethod.getAnnotation(com.tiptimes.tp.annotation.S.class);
+
+                if(asignal.name() != null){
+                    if(signal.target.equals(asignal.name())){
+                        //匹配
+                        result = (Boolean) handleMethod.invoke(deal, signal);
+                        signal.Distribution(); //分发数量加1
+                    }
+                }
+            }else{
+                if(signal.target == null){//当过虑条件和信号标识别都为null时匹配
+                    result = (Boolean) handleMethod.invoke(deal, signal);
+                    signal.Distribution();
+                }
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            result = true;
+        }
+        return  result;
+    }
+
     /**
      * 新的监听者加入的时候调用此方法
      * 询问当前信号集合中有没有要发送给当前监听者的信号
@@ -81,19 +120,21 @@ public class SignalManager {
 			try {
 				Method handleMethod = deal.getClass().getMethod("handleSignal", Signal.class);//signal接受方法
 				handleMethod.setAccessible(true);
-				if(handleMethod.isAnnotationPresent(SignalFilter.class)){
-					SignalFilter asignal=handleMethod.getAnnotation(SignalFilter.class);
-					String rex = asignal.signalRex();
-					if(signal.signalFlag != null && signal.signalFlag.matches(rex)){
-                        //匹配
-						Boolean result = (Boolean) handleMethod.invoke(deal, signal);
-						signal.Distribution(); //分发数量加1
-						if(result.booleanValue()){//是否要移除
-							removeSignals.add(signal);
-						}
+				if(handleMethod.isAnnotationPresent(com.tiptimes.tp.annotation.S.class)){
+					com.tiptimes.tp.annotation.S asignal=handleMethod.getAnnotation(com.tiptimes.tp.annotation.S.class);
+
+					if(asignal.name() != null){
+                        if(signal.target.equals(asignal.name())){
+                            //匹配
+                            Boolean result = (Boolean) handleMethod.invoke(deal, signal);
+                            signal.Distribution(); //分发数量加1
+                            if(result.booleanValue()){//是否要移除
+                                removeSignals.add(signal);
+                            }
+                        }
 					}
 				}else{
-					if(signal.signalFlag == null){//当过虑条件和信号标识别都为null时匹配
+					if(signal.target == null){//当过虑条件和信号标识别都为null时匹配
 						Boolean result = (Boolean) handleMethod.invoke(deal, signal);
 						signal.Distribution();
 						if(result.booleanValue()){

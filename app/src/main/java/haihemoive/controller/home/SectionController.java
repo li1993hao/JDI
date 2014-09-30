@@ -10,22 +10,21 @@ import com.tiptimes.tp.annotation.S;
 import com.tiptimes.tp.common.Signal;
 import com.tiptimes.tp.controller.AController;
 
+/**
+ * Created by haoli on 14-9-30.
+ */
 @C(Layout = R.layout.activity_my)
-public class HomeController extends AController {
+public class SectionController extends  AController{
     private Button IB_bnt;
     private TextView IB_text;
-
-
     @Override
     public void initView() {
         IB_bnt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendSignal("c2","c1给你发的信息做些什么吧");
-                pushController(SectionController.class);
+                popController();
             }
         });
-        IB_text.setText("这是controller1");
     }
 
     @Override
@@ -34,7 +33,7 @@ public class HomeController extends AController {
     }
 
     @Override
-    @S(name="c1")
+    @S(name="c2")
     public boolean handleSignal(Signal signal) {
         IB_text.setText(signal.action);
         return true;

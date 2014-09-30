@@ -23,8 +23,6 @@ public interface Controller extends SignalListener{
     /**
      * 对界面控件的初始化操作
      * 都放在这里
-     * 不要在setcontenview里写任何
-     * 初始化语句，也不要定义其他初始化入口
      */
 	void initView();
 

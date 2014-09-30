@@ -4,7 +4,7 @@ package com.tiptimes.tp.exception;
  * @author tiptimes LH
  *
  */
-public class ParameterNumIllegal extends Exception {
+public class ParameterNumIllegal extends JDIException {
 	/**
 	 * 
 	 */

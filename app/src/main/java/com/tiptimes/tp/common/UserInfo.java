@@ -6,5 +6,14 @@ package com.tiptimes.tp.common;
  * @author haoli
  */
 public class UserInfo {
+    private String version;
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getVersion() {
+        return version;
+    }
 
 }

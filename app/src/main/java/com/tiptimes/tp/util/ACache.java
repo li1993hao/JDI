@@ -15,6 +15,17 @@
  */
 package com.tiptimes.tp.util;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -36,25 +47,21 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.PixelFormat;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-
 /**
+ * 一个acache对象代表一个文件夹下的缓存管理器
+ *缓冲策略是Simple time-based
+ *
+ *
+ *
  * @author Michael Yang（www.yangfuhai.com） update at 2013.08.07
  */
 public class ACache {
 	public static final int TIME_HOUR = 60 * 60;
 	public static final int TIME_DAY = TIME_HOUR * 24;
-	private static final int MAX_SIZE = 1000 * 1000 * 50; // 50 mb
+	private static final int MAX_SIZE = 1000 * 1000 * 50; // 50 mb 默认的缓冲大小
 	private static final int MAX_COUNT = Integer.MAX_VALUE; // 不限制存放数据的数量
+
+    //缓冲管理对象集合
 	private static Map<String, ACache> mInstanceMap = new HashMap<String, ACache>();
 	private ACacheManager mCache;
 
@@ -89,11 +96,18 @@ public class ACache {
 		return "_" + android.os.Process.myPid();
 	}
 
+    /**
+     * 创建缓冲文件夹
+     * @param cacheDir 文件夹目录
+     * @param max_size 容量
+     * @param max_count 文件数目
+     */
 	private ACache(File cacheDir, long max_size, int max_count) {
 		if (!cacheDir.exists() && !cacheDir.mkdirs()) {
 			throw new RuntimeException("can't make dirs in "
 					+ cacheDir.getAbsolutePath());
 		}
+        //返回缓冲管理对象
 		mCache = new ACacheManager(cacheDir, max_size, max_count);
 	}
 
@@ -307,6 +321,11 @@ public class ACache {
 			mCache.put(file);
 		}
 	}
+
+    public boolean exists(String key){
+        File file = new File(key);
+        return  file.exists();
+    }
 
 	/**
 	 * 保存 byte数据 到 缓存中
@@ -566,13 +585,13 @@ public class ACache {
 	 * @version 1.0
 	 */
 	public class ACacheManager {
-		private final AtomicLong cacheSize;
-		private final AtomicInteger cacheCount;
-		private final long sizeLimit;
-		private final int countLimit;
+		private final AtomicLong cacheSize; //缓冲的大小
+		private final AtomicInteger cacheCount; //缓冲的数量
+		private final long sizeLimit;    //存储容量限制
+		private final int countLimit; //存储数量限制
 		private final Map<File, Long> lastUsageDates = Collections
 				.synchronizedMap(new HashMap<File, Long>());
-		protected File cacheDir;
+		protected File cacheDir; //缓冲目录
 
 		private ACacheManager(File cacheDir, long sizeLimit, int countLimit) {
 			this.cacheDir = cacheDir;
