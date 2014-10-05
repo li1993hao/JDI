@@ -4,8 +4,9 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 
 import com.tiptimes.tp.constant.Constants;
-import com.tiptimes.tp.controller.Application;
+import haihemoive.Application;
 import com.tiptimes.tp.util.ACache;
+import com.tiptimes.tp.util.L;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,10 +18,6 @@ import java.util.Map;
 /**
  * Created by haoli on 14-9-29.
  * 缓存管理类
- *
- *
- *
- *
  */
 public class CacheManager {
     private static ACache imageAcache; //图片缓冲管理
@@ -29,17 +26,17 @@ public class CacheManager {
     private static Map<String, SoftReference<Object>> iChache; //数据一级缓存
     private static Map<String, SoftReference<Bitmap>> imgCache;//图片一级缓存
 
-    static CacheManager mCache;
+    static CacheManager mCache = new CacheManager();
 
     private static File tempDic;
 
-    static private Object iCacheLock;
-    static private Object imgCacheLock;
-    static private Object fileAcacheLock;
-
+    static private Object iCacheLock = new Object();
+    static private Object imgCacheLock = new Object();
+    static private Object fileAcacheLock = new Object();
 
     private CacheManager() {
-        iChache = new HashMap<String, SoftReference<Object>>(); //初始化一级缓冲
+        iChache = new HashMap<String, SoftReference<Object>>(); //初始化数据一级缓冲
+        imgCache = new HashMap<String, SoftReference<Bitmap>>();//初始化图片一级缓冲
         if (Environment.MEDIA_MOUNTED.equals(Environment
                 .getExternalStorageState())) {
             //存在外部存储介质
@@ -47,8 +44,8 @@ public class CacheManager {
                     + Constants.IMAGECACHE_DIR));
             fileAcache = ACache.get(new File(Environment.getExternalStorageDirectory()
                     + Constants.FILE_DIR));
-            tempDic = new File(Environment.getExternalStorageDirectory()+Constants.TEMP_DIR);
-            if(!tempDic.exists()){
+            tempDic = new File(Environment.getExternalStorageDirectory() + Constants.TEMP_DIR);
+            if (!tempDic.exists()) {
                 tempDic.mkdirs();
             }
 
@@ -58,22 +55,15 @@ public class CacheManager {
                     + Constants.IMAGECACHE_DIR));
             fileAcache = ACache.get(new File(Application.getApplication().getFilesDir()
                     + Constants.FILE_DIR));
-            tempDic = new File(Application.getApplication().getFilesDir()+Constants.TEMP_DIR);
-            if(!tempDic.exists()){
+            tempDic = new File(Application.getApplication().getFilesDir() + Constants.TEMP_DIR);
+            if (!tempDic.exists()) {
                 tempDic.mkdirs();
             }
         }
     }
 
-    synchronized static public CacheManager getInstance() {
-        if (mCache == null) {
-            mCache = new CacheManager();
-        }
-        return mCache;
-    }
 
-
-    public static File getTempDic() {
+    static public File getTempDic() {
         return tempDic;
     }
 
@@ -83,30 +73,62 @@ public class CacheManager {
      * @param bitmap
      * @param saveTime 小时
      */
-    static void putImage(String name, Bitmap bitmap, int saveTime) {
+    static public void putImage(String name, Bitmap bitmap, int saveTime) {
         synchronized (imgCacheLock) {
             imgCache.put(name, new SoftReference<Bitmap>(bitmap));
-            imageAcache.put(name, bitmap, saveTime * 60 * 60);
+            if (saveTime <= 0) {
+                imageAcache.put(name, bitmap);
+            } else {
+                imageAcache.put(name, bitmap, saveTime * 60 * 60);
+            }
         }
     }
 
-    static Bitmap getImage(String name) {
+    static public void putImageInMermory(String name, Bitmap bitmap) {
+        synchronized (imgCacheLock) {
+            imgCache.put(name, new SoftReference<Bitmap>(bitmap));
+        }
+    }
+
+    static public Bitmap getImageInMermory(String name) {
         synchronized (imgCacheLock) {
             SoftReference<Bitmap> sb = imgCache.get(name);
             if (sb != null) {
-                return sb.get();
+                L.d(L.TAG, name + ":hit in memeroy");
+                if (sb.get() != null) {
+                    return sb.get();
+                } else {
+                    imgCache.remove(sb);
+                    return null;
+                }
+            }
+            return null;
+        }
+    }
+
+    static public Bitmap getImage(String name) {
+        synchronized (imgCacheLock) {
+            SoftReference<Bitmap> sb = imgCache.get(name);
+            if (sb != null) {
+                L.d(L.TAG, name + ":hit in memeroy");
+                if (sb.get() != null) {
+                    return sb.get();
+                } else {
+                    imgCache.remove(sb);
+                    return imageAcache.getAsBitmap(name);
+                }
             }
             return imageAcache.getAsBitmap(name);
         }
     }
 
-    static File getFile(String name) {
+    static public File getFile(String name) {
         synchronized (fileAcacheLock) {
             return fileAcache.file(name);
         }
     }
 
-    static boolean putFile(String name, File file, int saveTime) {
+    static public boolean putFile(String name, File file, int saveTime) {
         RandomAccessFile RAFile = null;
         boolean isNormal = true;
         try {
@@ -116,7 +138,11 @@ public class CacheManager {
             isNormal = true;
 
             synchronized (fileAcacheLock) {
-                fileAcache.put(name, byteArray, saveTime * 60);
+                if (saveTime <= 0) {
+                    fileAcache.put(name, byteArray);
+                } else {
+                    fileAcache.put(name, byteArray, saveTime * 60);
+                }
             }
 
         } catch (Exception e) {
@@ -136,7 +162,8 @@ public class CacheManager {
         }
     }
 
-    static Object getData(String name) {
+
+    static public Object getData(String name) {
         synchronized (iCacheLock) {
             SoftReference<Object> o = iChache.get(name);
             if (o != null) {
@@ -148,9 +175,69 @@ public class CacheManager {
 
     }
 
-    static void putData(String name, Object data) {
+    static public void putData(String name, Object data) {
         synchronized (iCacheLock) {
             iChache.put(name, new SoftReference<Object>(data));
+        }
+    }
+
+    /**
+     * 获取图片二级缓存的大小
+     * 内存大小mb
+     *
+     * @return
+     */
+    static public long getImageACacheSize() {
+        synchronized (imgCacheLock) {
+            return imageAcache.getCacheSize() / (1000 * 1000);
+        }
+    }
+
+    /**
+     * 获取文件二级缓存的大小
+     *
+     * @return
+     */
+    static public long getFileCacheSize() {
+        synchronized (fileAcache) {
+            return fileAcache.getCacheSize() / (1000 * 1000);
+        }
+    }
+
+
+    /**
+     * 清空图片的二级缓存
+     */
+    static public void clearImageACache() {
+        synchronized (imgCacheLock) {
+            imageAcache.clear();
+        }
+    }
+
+    /**
+     * 清空文件的二级缓存
+     */
+    static public void clearFileCache() {
+        synchronized (fileAcache) {
+            fileAcache.clear();
+        }
+    }
+
+    /**
+     * 清空图片的一级缓存
+     */
+    static public void clearImgCache() {
+        synchronized (imgCacheLock) {
+            imgCache.clear();
+        }
+    }
+
+    /**
+     * 清空数据的一级缓存
+     */
+    static public void clearDataCache() {
+        synchronized (iCacheLock) {
+            iChache.clear();
         }
     }
 }

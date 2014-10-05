@@ -4,7 +4,9 @@ import java.io.IOException;
 
 public class MyClass {
     static public void main(String[] args) throws IOException {
-        String a = "action";
-        System.out.print(a.split(":").length);
+           int i = 12;
+        Integer I =12;
+
+            System.out.print(I.getClass().equals(int.class));
     }
 }

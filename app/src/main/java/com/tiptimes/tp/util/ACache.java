@@ -49,10 +49,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 一个acache对象代表一个文件夹下的缓存管理器
- *缓冲策略是Simple time-based
- *
- *
- *
+ *缓冲策略是LRU
  * @author Michael Yang（www.yangfuhai.com） update at 2013.08.07
  */
 public class ACache {
@@ -504,6 +501,7 @@ public class ACache {
 		if (getAsBinary(key) == null) {
 			return null;
 		}
+        L.d(L.TAG, key+":hit in disk");
 		return Utils.Bytes2Bimap(getAsBinary(key));
 	}
 
@@ -562,6 +560,11 @@ public class ACache {
 		return null;
 	}
 
+
+    public void getSize(){
+
+    }
+
 	/**
 	 * 移除某个key
 	 * 
@@ -578,6 +581,14 @@ public class ACache {
 	public void clear() {
 		mCache.clear();
 	}
+
+    public  long getCacheSize(){
+        return mCache.getCacheSize();
+    }
+
+    public  int getCacheCount(){
+       return mCache.getCacheCount();
+    }
 
 	/**
 	 * @title 缓存管理器
@@ -602,7 +613,15 @@ public class ACache {
 			calculateCacheSizeAndCacheCount();
 		}
 
-		/**
+        public long getCacheSize() {
+            return cacheSize.longValue();
+        }
+
+        public int getCacheCount() {
+            return cacheCount.intValue();
+        }
+
+        /**
 		 * 计算 cacheSize和cacheCount
 		 */
 		private void calculateCacheSizeAndCacheCount() {

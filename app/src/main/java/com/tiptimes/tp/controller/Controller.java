@@ -1,5 +1,6 @@
 package com.tiptimes.tp.controller;
 
+import android.os.Bundle;
 import android.view.View;
 
 import com.tiptimes.tp.common.ActionDeal;
@@ -24,20 +25,12 @@ public interface Controller extends SignalListener{
      * 对界面控件的初始化操作
      * 都放在这里
      */
-	void initView();
+	void initView(Bundle savedInstanceState);
 
     /**
      * 数据的初始化放在此处
      */
 	void initData();
-
-    /**
-     * 执行动态绑定
-     * dynBind在执行完动态绑定操作
-     * 后会去调用控制器的
-     * initView 和 initData方法
-     */
-	void dynBind();
 
     /**
      * 网络请求的方法

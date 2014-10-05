@@ -1,5 +1,6 @@
 package haihemoive.controller.home;
 
+import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -18,7 +19,7 @@ public class SectionController extends  AController{
     private Button IB_bnt;
     private TextView IB_text;
     @Override
-    public void initView() {
+    public void initView(Bundle savedInstanceState) {
         IB_bnt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

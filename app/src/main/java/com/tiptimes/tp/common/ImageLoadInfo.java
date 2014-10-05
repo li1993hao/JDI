@@ -16,6 +16,8 @@ public class ImageLoadInfo  {
 	private OnLoadListener<Bitmap> onImageLoadListener; //回调信息监听者
 	private Bitmap placeHoldImage; //占位图片
 	private ImageView imageView; //要填充的imageView
+    private int cacheLevel = 2;  //缓冲等级0 不缓冲，1只缓冲到内存中，2缓冲到硬盘里.
+    private boolean searchInCache = true;  //false不去缓存搜索,直接下载.true去缓冲搜索
 	
 	public ImageView getImageView() {
 		return imageView;
@@ -24,9 +26,31 @@ public class ImageLoadInfo  {
 		return url;
 	}
 
-	
-	
-	public class SimpleImageLoadListener  extends ImageLoadListenerAdapter{
+    public boolean isSearchInCache() {
+        return searchInCache;
+    }
+
+    public boolean isHasProgress() {
+        return hasProgress;
+    }
+
+    public int getCacheLevel() {
+        return cacheLevel;
+    }
+    public boolean hasProgress() {
+        return hasProgress;
+    }
+    public OnLoadListener<Bitmap> getOnImageLoadListener() {
+        return onImageLoadListener;
+    }
+    public Bitmap getPlaceHoldImage() {
+        return placeHoldImage;
+    }
+    public int getControllerID() {
+        return controllerID;
+    }
+
+    public class SimpleImageLoadListener  extends ImageLoadListenerAdapter{
 
 		@Override
 		public void loding(int progress) {
@@ -50,8 +74,8 @@ public class ImageLoadInfo  {
 	private ImageLoadInfo(){
 		
 	}
-	
-	
+
+
 	public ImageLoadInfo(Controller controller,ImageView imageView, String url){
 		this.controllerID = controller.hashCode();
 		this.imageView = imageView;
@@ -68,6 +92,7 @@ public class ImageLoadInfo  {
         this.onImageLoadListener = new SimpleImageLoadListener();
         this.placeHoldImage = placeHoldImage;
         this.url = url;
+        imageView.setImageBitmap(placeHoldImage);
     }
 
 	public static class Builder {
@@ -77,8 +102,24 @@ public class ImageLoadInfo  {
 		private Bitmap placeHoldImage;
 		private ImageView imageView;
 		private int controllerID;
-		
-		public Builder setController(Controller controller){
+        private int cacheLevel = 2;  //缓冲等级0 不缓冲，1只缓冲到内存中，2缓冲到硬盘里.
+        private boolean searchInCache = true;  //false不去缓存搜索,直接下载.true去缓冲搜索
+
+        public Builder setControllerID(int controllerID) {
+            this.controllerID = controllerID;
+            return this;
+        }
+
+        public Builder setCacheLevel(int cacheLevel) {
+            this.cacheLevel = cacheLevel;
+            return this;
+        }
+
+        public void setSearchInCache(boolean searchInCache) {
+            this.searchInCache = searchInCache;
+        }
+
+        public Builder setController(Controller controller){
 			this.controllerID = controller.hashCode();
 			return this;
 		}
@@ -112,31 +153,16 @@ public class ImageLoadInfo  {
 			info.url = url;
 			info.imageView = imageView;
 			info.controllerID = controllerID;
+            info.cacheLevel = cacheLevel;
+            info.searchInCache = searchInCache;
+
+            if(info.placeHoldImage != null && imageView != null){
+                imageView.setImageBitmap(placeHoldImage);
+            }
 			return info;
 		}
 		  
 	}
-
-	public boolean hasProgress() {
-		return hasProgress;
-	}
-	public OnLoadListener<Bitmap> getOnImageLoadListener() {
-		return onImageLoadListener;
-	}
-	public Bitmap getPlaceHoldImage() {
-		return placeHoldImage;
-	}
-	public int getControllerID() {
-		return controllerID;
-	}
-	public void setControllerID(int controllerID) {
-		this.controllerID = controllerID;
-	}
-
-
-    public void startLoad(){
-        ThreadPoolManager.getInstance().execImageDownload(this);
-    }
 
 
 }

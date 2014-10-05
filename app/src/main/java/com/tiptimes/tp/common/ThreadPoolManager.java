@@ -1,13 +1,14 @@
 package com.tiptimes.tp.common;
 
+import com.tiptimes.tp.constant.Constants;
+import com.tiptimes.tp.controller.Controller;
+import com.tiptimes.tp.util.L;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.tiptimes.tp.constant.Constants;
-import com.tiptimes.tp.controller.Controller;
-import com.tiptimes.tp.util.L;
 /**
  * 线程池 的管理类
  * 
@@ -15,13 +16,15 @@ import com.tiptimes.tp.util.L;
  *
  */
 public class ThreadPoolManager {
+    private static int FIXTHREADCOUNT = 2;
 	private static ThreadPoolManager threaPoolManager;
 	private static ExecutorService executorService; //执行网络请求的服务类
+    private static ExecutorService fixService;
 	private static List<Runnable> actionTask = new LinkedList<Runnable>(); //任务队列
 	
 	private ThreadPoolManager(){
 		executorService = Executors.newCachedThreadPool();
-		
+        fixService = Executors.newFixedThreadPool(FIXTHREADCOUNT);
 	}
 	public static synchronized ThreadPoolManager getInstance(){
 		if(threaPoolManager==null){
@@ -58,7 +61,7 @@ public class ThreadPoolManager {
      * @param imageLoadInfo
      */
 	public void execImageDownload(ImageLoadInfo imageLoadInfo){
-		executorService.execute(new ImageLoadService(imageLoadInfo));
+        fixService.execute(new ImageLoadService(imageLoadInfo));
 	}
 
 

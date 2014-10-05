@@ -72,15 +72,6 @@ public abstract class AController extends Activity implements Controller {
     protected void hideWaitDialog() {
     }
 
-    /**
-     * 执行动态绑定
-     */
-    public void dynBind() {
-        dynamicCode.bind();
-        initView();
-        initData();
-    }
-
 
     /**
      * 进行控制器销毁前的清理工作
@@ -93,14 +84,15 @@ public abstract class AController extends Activity implements Controller {
         super.onDestroy();
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
         dynamicCode = new DynamicCode(this);
         setContentView(dynamicCode.getLayoutId());
-        dynBind();
+        dynamicCode.bind();
+        initView(savedInstanceState);
+        initData();
         SignalManager.addSignalListener(this); //成为信号监听者
     }
 

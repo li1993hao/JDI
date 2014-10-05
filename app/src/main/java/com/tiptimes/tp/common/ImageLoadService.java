@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 
 import com.tiptimes.tp.constant.Constants;
-import com.tiptimes.tp.controller.Application;
+import haihemoive.Application;
 import com.tiptimes.tp.util.HttpUtil;
 import com.tiptimes.tp.util.L;
 
@@ -29,14 +29,16 @@ public class ImageLoadService implements Runnable,ControllerObserver {
 	
 	@Override
 	public void run() {
-        /**
-         * 缓存中是否有此信息
-         */
-        Bitmap bitmap = CacheManager.getImage(imageLoadInfo.getUrl());
+        Bitmap bitmap = null;
+        if(imageLoadInfo.isSearchInCache()){
+            bitmap = CacheManager.getImage(imageLoadInfo.getUrl());
+        }
+
 		if(bitmap !=null){
             //缓存命中
 			imageLoadInfo.getOnImageLoadListener().loaded(bitmap, imageLoadInfo.getUrl());
 		}else{
+            L.d(L.TAG, "no hit: start download form"+imageLoadInfo.getUrl());
             try {
                 if(!imageLoadInfo.hasProgress()){
                     justDownLoad();
@@ -63,8 +65,11 @@ public class ImageLoadService implements Runnable,ControllerObserver {
         InputStream is = conn.getInputStream();
         BitmapDrawable bitmap =new BitmapDrawable(Application.getApplication().getResources(), is);
 
-        CacheManager.putImage(imageLoadInfo.getUrl(), bitmap.getBitmap(),-1);
-
+        if(imageLoadInfo.getCacheLevel()==1){
+            CacheManager.putImageInMermory(imageLoadInfo.getUrl(), bitmap.getBitmap());
+        }else if(imageLoadInfo.getCacheLevel()==2){
+            CacheManager.putImage(imageLoadInfo.getUrl(), bitmap.getBitmap(),-1);
+        }
         imageLoadInfo.getOnImageLoadListener().loaded(bitmap.getBitmap(), imageLoadInfo.getUrl());
 	}
 
@@ -97,13 +102,12 @@ public class ImageLoadService implements Runnable,ControllerObserver {
                 in.close();
                 return;
             }
-            L.d(L.TAG, pro+"");
             f.write(buffer, 0, len1);
         }
 
         BitmapDrawable bitmap = new BitmapDrawable(Application.getApplication().getResources() ,tempFile.getAbsolutePath());
         CacheManager.putImage(imageLoadInfo.getUrl(),bitmap.getBitmap(),-1);//放入缓存中
-
+        imageLoadInfo.getOnImageLoadListener().loaded(bitmap.getBitmap(),imageLoadInfo.getUrl());
         tempFile.delete();//删除临时文件
         f.close();
         in.close();

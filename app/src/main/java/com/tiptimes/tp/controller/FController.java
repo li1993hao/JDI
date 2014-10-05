@@ -31,7 +31,9 @@ public abstract class FController extends Fragment implements Controller{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mview = inflater.inflate(dynamicCode.getLayoutId(),null);
-        dynBind();
+        dynamicCode.bind();
+        initView(savedInstanceState);
+        initData();
         return mview;
     }
 
@@ -55,15 +57,8 @@ public abstract class FController extends Fragment implements Controller{
         dynamicCode = new DynamicCode(this);
         SignalManager.addSignalListener(this);
 
-    }
 
-	@Override
-	public void dynBind() {
-		// TODO Auto-generated method stub
-		dynamicCode.bind();
-		initView();
-		initData();
-	}
+    }
 
 
 	@Override

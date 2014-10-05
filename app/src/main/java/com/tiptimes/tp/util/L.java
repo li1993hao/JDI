@@ -3,7 +3,7 @@ package com.tiptimes.tp.util;
 import android.util.Log;
 
 public class L {
-	public static String TAG ="tiptimes";
+	public static String TAG ="tt";
 	private static boolean DEBUG = true;
 
 	public static void v(String tag, String msg) {

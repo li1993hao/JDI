@@ -1,6 +1,6 @@
 package com.tiptimes.tp.common;
 import com.alibaba.fastjson.JSON;
-import com.tiptimes.tp.controller.Application;
+import haihemoive.Application;
 import com.tiptimes.tp.util.ACache;
 
 import java.io.File;

@@ -1,5 +1,18 @@
 package com.tiptimes.tp.util;
 
+import haihemoive.Application;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.util.EntityUtils;
+
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,20 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.util.EntityUtils;
-
-import com.tiptimes.tp.controller.Application;
-
 public class HttpUtil {
 	public static int REQUEST_TIMEOUT = 5000;
 	public static int SO_TIMEOUT = 10000;
@@ -33,9 +32,7 @@ public class HttpUtil {
 	static String EX_UNKNOW = "未知错误";
 	static String EX_NETUNAVALIABLE = "网络不可用!";
 	static DefaultHttpClient httpClient;
-	
-	
-	
+
 	static private DefaultHttpClient getHttpClient(){
 		if(httpClient == null){
 		    BasicHttpParams httpParams = new BasicHttpParams();
@@ -99,6 +96,7 @@ public class HttpUtil {
 	    	L.i(L.TAG, "response_data:"+respondStr);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+            e.printStackTrace();
 	        return getExceptionJson(EX_TIMEOUT);
 		}
 
