@@ -5,9 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.CancellationSignal;
 
-import com.tiptimes.tp.Db.annotation.Column;
-import com.tiptimes.tp.Db.annotation.Table;
-import com.tiptimes.tp.util.L;
+import com.tiptimes.tp.Db.annotation.Ignore;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -21,17 +19,11 @@ import haihemoive.Application;
 /**
  * Created by haoli on 14-10-4.
  */
-public class Dao<T> {
+public class Dao<T extends Model> {
     public QueryBuilder<T> getFrom(Class cls) {
-        if (!cls.isAnnotationPresent(Table.class)) {
-            L.e(L.TAG, cls.getSimpleName() + ":没有声明为实体类!");
-            return null;
-        }
-
-        Table table = (Table) cls.getAnnotation(Table.class);
         QueryBuilder<T> sb = new QueryBuilder<T>();
         sb.cls = cls;
-        return sb.setTable(table.name());
+        return sb.setTable(cls.getSimpleName());
 
     }
 
@@ -39,26 +31,13 @@ public class Dao<T> {
         return delete(cls, null, null);
     }
 
-    public int delete(Class cls, String whereClause, String[] whereArgs) {
-        if (!cls.isAnnotationPresent(Table.class)) {
-            L.e(L.TAG, cls.getSimpleName() + ":没有声明为实体类!");
-            return 0;
-        }
-
-        Table table = (Table) cls.getAnnotation(Table.class);
+    public int delete(Class cls, String whereClause, String... whereArgs) {
         DbHelper dh = new DbHelper(Application.getApplication());
-        return dh.getWritableDatabase().delete(table.name(), whereClause, whereArgs);
+        return dh.getWritableDatabase().delete(cls.getSimpleName(), whereClause, whereArgs);
 
     }
 
     public long insert(T object) {
-        if (!object.getClass().isAnnotationPresent(Table.class)) {
-            L.e(L.TAG, object.getClass().getSimpleName() + ":没有声明为实体类!");
-            return 0;
-        }
-
-        Table table = (Table) object.getClass().getAnnotation(Table.class);
-
         Map<Field, String> columnMap = getColumnMap(object.getClass());
         ContentValues contentValues = new ContentValues();
 
@@ -75,25 +54,16 @@ public class Dao<T> {
         DbHelper dh = new DbHelper(Application.getApplication());
         SQLiteDatabase db = dh.getWritableDatabase();
 
-        return db.insert(table.name(), null, contentValues);
+        return db.insert(object.getClass().getSimpleName(), null, contentValues);
 
     }
 
     public long insertAll(List<T> list) {
-        if (list == null || list.size() == 0) {
-            return 0;
-        }
-
-        if (list.get(0).getClass().isAnnotationPresent(Table.class)) {
-            L.e(L.TAG, list.get(0).getClass().getSimpleName() + ":没有声明为实体类!");
-            return 0;
-        }
-
-        Table table = (Table) list.get(0).getClass().getAnnotation(Table.class);
-        long result = 0;
-
         Map<Field, String> columnMap = getColumnMap(list.get(0).getClass());
         Set<Field> filedSet = columnMap.keySet();
+        String tableName= list.get(0).getClass().getSimpleName();
+
+        int result = 0;
 
         DbHelper dh = new DbHelper(Application.getApplication());
         SQLiteDatabase db = dh.getWritableDatabase();
@@ -106,7 +76,7 @@ public class Dao<T> {
                     String columnName = columnMap.get(field);
                     setColumnValue(object, field, columnName, contentValues);
                 }
-                result = db.insert(table.name(), null, contentValues)>0?result+1:result;
+                result = db.insert(tableName, null, contentValues)>0?result+1:result;
             }
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -119,12 +89,32 @@ public class Dao<T> {
         return result;
     }
 
-    public void updateById(T object){
+    public int updateById(T object){
 
+        Map<Field, String> columnMap = getColumnMap(object.getClass());
+        Set<Field> filedSet = columnMap.keySet();
+
+        ContentValues contentValues = new ContentValues();
+        for (Field field : filedSet) {
+            String columnName = columnMap.get(field);
+            try {
+                setColumnValue(object, field, columnName, contentValues);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        DbHelper dh = new DbHelper(Application.getApplication());
+        SQLiteDatabase db = dh.getWritableDatabase();
+        return db.update(object.getClass().getSimpleName(),contentValues,"_id=?",new String[]{object.get_id()+""});
     }
 
-    public void update(T object, String whereClause, String[] whereArgs){
 
+
+    public int update(Class<?> cls,ContentValues values, String whereClause, String... whereArgs){
+
+        DbHelper dh = new DbHelper(Application.getApplication());
+        SQLiteDatabase db = dh.getWritableDatabase();
+        return db.update(cls.getSimpleName(),values,whereClause,whereArgs);
     }
 
     public class QueryBuilder<T> {
@@ -140,32 +130,32 @@ public class Dao<T> {
         private String limit;
         private CancellationSignal cancellationSignal;
 
-        public QueryBuilder setTable(String table) {
+        public QueryBuilder<T> setTable(String table) {
             this.table = table;
             return this;
         }
 
-        public QueryBuilder setDistinct(boolean distinct) {
+        public QueryBuilder<T> setDistinct(boolean distinct) {
             this.distinct = distinct;
             return this;
         }
 
-        public QueryBuilder setColumns(String[] columns) {
+        public QueryBuilder<T> setColumns(String... columns) {
             this.columns = columns;
             return this;
         }
 
-        public QueryBuilder setSelection(String selection) {
+        public QueryBuilder<T> setSelection(String selection) {
             this.selection = selection;
             return this;
         }
 
-        public QueryBuilder setSelectionArgs(String[] selectionArgs) {
-            this.selectionArgs = selectionArgs;
+        public QueryBuilder<T> setSelectionArgs(String... args) {
+            this.selectionArgs = args;
             return this;
         }
 
-        public QueryBuilder setGroupBy(String groupBy) {
+        public QueryBuilder<T> setGroupBy(String groupBy) {
             this.groupBy = groupBy;
             return this;
         }
@@ -175,17 +165,17 @@ public class Dao<T> {
             return this;
         }
 
-        public QueryBuilder setOrderBy(String orderBy) {
+        public QueryBuilder<T> setOrderBy(String orderBy) {
             this.orderBy = orderBy;
             return this;
         }
 
-        public QueryBuilder setLimit(String limit) {
+        public QueryBuilder<T> setLimit(String limit) {
             this.limit = limit;
             return this;
         }
 
-        public QueryBuilder setCancellationSignal(CancellationSignal cancellationSignal) {
+        public QueryBuilder<T> setCancellationSignal(CancellationSignal cancellationSignal) {
             this.cancellationSignal = cancellationSignal;
             return this;
         }
@@ -196,9 +186,18 @@ public class Dao<T> {
             List<T> list = new ArrayList<T>();
             Map<Field, String> columnMap = getColumnMap(cls);
             Set<Field> filedSet = columnMap.keySet();
+            Field _id = null;
+            try {
+                 _id = Model.class.getDeclaredField("_id");
+                _id.setAccessible(true);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
             while (cursor.moveToNext()) {
                 try {
                     Object o = cls.newInstance();
+                    _id.setLong(o,cursor.getLong(0));
                     for (Field field : filedSet) {
                         String columnName = columnMap.get(field);
                         setObjectValue(o, field, cursor, columnName);
@@ -213,7 +212,7 @@ public class Dao<T> {
             return list;
         }
 
-        public T row() {
+        public T one() {
             List<T> ls = all();
             if (ls.size() > 0) {
                 return ls.get(0);
@@ -229,9 +228,8 @@ public class Dao<T> {
         Field[] fields = cls.getDeclaredFields();
         Map<Field, String> columnMap = new HashMap<Field, String>();
         for (int i = 0; i < fields.length; i++) {
-            if (fields[i].isAnnotationPresent(Column.class)) {
-                Column column = fields[i].getAnnotation(Column.class);
-                columnMap.put(fields[i], column.name().equals("") ? fields[i].getName() : column.name());
+            if (!fields[i].isAnnotationPresent(Ignore.class)) {
+                columnMap.put(fields[i], fields[i].getName());
             }
         }
         return columnMap;

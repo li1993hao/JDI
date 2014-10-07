@@ -1,11 +1,9 @@
 package haihemoive;
 
-import android.database.sqlite.SQLiteDatabase;
-
 import com.tiptimes.tp.Db.DbHelper;
 import com.tiptimes.tp.Db.DbListener;
+import com.tiptimes.tp.Db.User;
 import com.tiptimes.tp.common.CacheManager;
-import com.tiptimes.tp.util.L;
 
 /**
  * 应用程序的实例类
@@ -21,12 +19,8 @@ public class Application extends android.app.Application {
 		// TODO Auto-generated method stub
 		super.onCreate();
 		application = this;
-        configDb();
-	}
-
-    public void configDb(){
         DbHelper.setDbListener(new DbConfig());
-    }
+	}
 
 	public static Application getApplication() {
 		return application;
@@ -46,22 +40,18 @@ class DbConfig implements DbListener{
     private final static String DATABASENAME="JDI";
 
     @Override
-    public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        String sql = "create table User(id,name)";
-        sqLiteDatabase.execSQL(sql);
-        L.e(L.TAG,"db_onCreate");
+    public void onCreate(DbHelper dh ) {
+        dh.creatTable(User.class);
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        String sql = "create table User(id,name)";
-        sqLiteDatabase.execSQL(sql);
-        L.e(L.TAG,"db_onUpgrade");
+    public void onUpgrade(DbHelper dh,int oldVersion, int newVersion) {
+
     }
 
     @Override
     public int getVerson() {
-        return 4;
+        return VERSION;
     }
 
     @Override

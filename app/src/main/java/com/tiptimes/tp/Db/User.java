@@ -1,37 +1,34 @@
 package com.tiptimes.tp.Db;
 
-import com.tiptimes.tp.Db.annotation.Column;
-import com.tiptimes.tp.Db.annotation.Table;
-
 /**
  * Created by haoli on 14-10-4.
  */
-@Table(name = "User")
-public class User {
-    @Column
-    private int id;
-    @Column
+public class User extends Model{
     private String name;
+    private int age;
 
-    public User(int id, String name){
-        this.id = id;
+    public User(String name, int age){
         this.name = name;
+        this.age = age;
     }
 
+    public  User(){
 
-    public void setId(int id) {
-        this.id = id;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public int getId() {
-        return id;
+    public void setAge(int age) {
+        this.age = age;
     }
 
     public String getName() {
         return name;
+    }
+
+    public int getAge() {
+        return age;
     }
 }

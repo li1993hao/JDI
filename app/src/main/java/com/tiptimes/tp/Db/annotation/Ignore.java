@@ -6,10 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by haoli on 14-10-4.
+ * Created by haoli on 14-10-5.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Table {
-    String name();
+@Target(ElementType.FIELD)
+public @interface Ignore {
 }
