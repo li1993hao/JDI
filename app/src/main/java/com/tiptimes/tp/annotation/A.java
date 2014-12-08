@@ -1,5 +1,7 @@
 package com.tiptimes.tp.annotation;
 
+import com.tiptimes.tp.common.ActionInfo;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -15,4 +17,5 @@ import java.lang.annotation.Target;
 public @interface A {
 	String url() ;
 	String actionListener() default "";
+    ActionInfo.QequestMethod method() default  ActionInfo.QequestMethod.POST;
 }

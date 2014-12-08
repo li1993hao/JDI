@@ -1,6 +1,7 @@
 package com.tiptimes.tp.common;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -18,7 +19,11 @@ public class ParameterMap extends HashMap<String, String> {
 			super.put(keyAndValue[i], keyAndValue[i+1]);
 		}
 	}
-	
+
+    public  ParameterMap(Map<String, String> params){
+        this.putAll(params);
+    }
+
 	public ParameterMap(){
 		super();
 	}

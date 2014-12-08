@@ -178,7 +178,7 @@ public class DynamicCode {
      * @param actionDeal
      * @param params
      */
-	public void actionPerformed(ActionDeal actionDeal, ParameterMap params){
+	public void actionPerformed(ActionDeal actionDeal, DataParser dataParser, ParameterMap params){
 			Field field = actionDealMap.get(actionDeal); //当前actionDeal的field
 
             if(field == null){
@@ -223,9 +223,11 @@ public class DynamicCode {
             }else{
                 A aa = field.getAnnotation(A.class);
                 actionInfo.setUrl(aa.url());
+                actionInfo.setMethod(aa.method());
                 actionInfo.setControllerID(mController.hashCode());
                 actionInfo.setParams(params);
                 actionInfo.setDataClass(clz);
+                actionInfo.setDataParser(dataParser);
                 actionInfo.actionDeal = actionDeal;
                 ThreadPoolManager.getInstance().execActions(actionInfo);
             }

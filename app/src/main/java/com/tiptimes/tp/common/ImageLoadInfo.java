@@ -52,24 +52,21 @@ public class ImageLoadInfo  {
 
     public class SimpleImageLoadListener  extends ImageLoadListenerAdapter{
 
-		@Override
-		public void loding(int progress) {
-			// TODO Auto-generated method stub
-			
-		}
+        @Override
+        public void loading_(float total, float prorgress) {
 
-		@Override
-		public void fail(Message message) {
-			// TODO Auto-generated method stub
-			
-		}
+        }
 
-		@Override
-		public void loadded(Bitmap bitmap) {
-			// TODO Auto-generated method stub
-			imageView.setImageBitmap(bitmap);
-		}
-	}
+        @Override
+        public void loadFail_(Message message) {
+
+        }
+
+        @Override
+        public void loaded_(Bitmap image) {
+            imageView.setImageBitmap(image);
+        }
+    }
 	
 	private ImageLoadInfo(){
 		

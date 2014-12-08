@@ -11,18 +11,43 @@ import android.os.Looper;
  */
 @SuppressWarnings("rawtypes")
 public class ActionInfo {
+
+    public enum QequestMethod {
+        GET,
+        POST
+    }
+
+    private QequestMethod method;
 	private int controllerID; //控制器的id
 	private  String url; //请求的url
 	private boolean isList; //请求数据是否是线性集合
 	private ParameterMap params; //请求参数
 	private Class dataClass;  //请求数据类型
 	private Handler handler = new Handler(Looper.getMainLooper()); //主线程的handler对象
-	public Handler getHandler() {
+    private DataParser dataParser;
+
+    public QequestMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(QequestMethod method) {
+        this.method = method;
+    }
+
+    public Handler getHandler() {
 		return handler;
 	}
 
 	public ActionDeal actionDeal; //动作请求构件
 
+
+    public DataParser getDataParser() {
+        return dataParser;
+    }
+
+    public void setDataParser(DataParser dataParser) {
+        this.dataParser = dataParser;
+    }
 
     /**
      * 请求信息比较方法，确保请求的唯一性

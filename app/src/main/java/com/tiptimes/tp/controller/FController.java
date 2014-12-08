@@ -64,7 +64,7 @@ public abstract class FController extends Fragment implements Controller{
 	@Override
 	public void actionPerformed( ActionDeal actionDeal, ParameterMap params) {
 		// TODO Auto-generated method stub
-		dynamicCode.actionPerformed(actionDeal, params);
+		dynamicCode.actionPerformed(actionDeal,null, params);
 	}
 
 

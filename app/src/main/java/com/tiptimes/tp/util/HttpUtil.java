@@ -1,11 +1,10 @@
 package com.tiptimes.tp.util;
 
-import haihemoive.Application;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -23,6 +22,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import haihemoive.Application;
 
 public class HttpUtil {
 	public static int REQUEST_TIMEOUT = 5000;
@@ -42,6 +44,72 @@ public class HttpUtil {
 		}
 		return httpClient;
 	}
+
+
+   static public String assemblyUrlByCommon(String url, Map<String,String> params) {
+        if (params == null && params.size() == 0) {
+            return url;
+        } else {
+            StringBuilder sb = new StringBuilder(url);
+            sb.append("?");
+
+            Set<String> keys = params.keySet();
+            int i = 0;
+            for (String key : keys) {
+                String value = params.get(key);
+                sb.append(key).append("=").append(value);
+                if (i != keys.size()-1) {
+                    sb.append("&");
+                }
+                i++;
+            }
+            return sb.toString();
+        }
+    }
+
+    /**
+     * get请求
+     * @param path
+     * @param params
+     * @return
+     */
+    public static HttpRespondInfo getRequest(String path,
+                                              Map<String, String> params) {
+        L.i(L.TAG, "get_url:"+path);
+
+        if(!NetWorkUtil.isAvaliable(Application.getApplication())){
+            return getExceptionJson(EX_NETUNAVALIABLE);
+        }
+
+
+
+        // 使用HttpPost对象设置发送的URL路径
+        HttpGet  get = new HttpGet(assemblyUrlByCommon(path,params));
+        String respondStr = null;
+
+        // 创建一个浏览器对象，以把get对象向服务器发送，并返回响应消息
+        DefaultHttpClient dhc = getHttpClient();
+        HttpResponse response = null;
+        try {
+            response = dhc.execute(get);
+            respondStr = EntityUtils.toString(response.getEntity(), "utf-8");
+            L.i(L.TAG, "response_data:"+respondStr);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return getExceptionJson(EX_TIMEOUT);
+        }
+
+        L.d(L.TAG, "服务器返回状态：----" + response.getStatusLine().getStatusCode());
+        if (response != null && response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            return new HttpRespondInfo(respondStr, true);
+        } else{
+            get.abort();
+        }
+
+        return getExceptionJson(EX_UNKNOW);
+    }
+
 
     /**
      * post请求

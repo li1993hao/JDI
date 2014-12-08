@@ -8,7 +8,7 @@ package com.tiptimes.tp.common;
  * @param <T>
  */
 public interface OnLoadListener<T> {
-    void loading(int prorgess);
+    void loading(float total,float prorgess);
     void loadFail(Message message);
 
     /**

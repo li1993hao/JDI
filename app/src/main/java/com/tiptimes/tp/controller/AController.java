@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.widget.Toast;
 
 import com.tiptimes.tp.common.ActionDeal;
+import com.tiptimes.tp.common.DataParser;
 import com.tiptimes.tp.common.DynamicCode;
 import com.tiptimes.tp.common.ParameterMap;
 import com.tiptimes.tp.common.Signal;
@@ -70,6 +71,7 @@ public abstract class AController extends Activity implements Controller {
      * 隐藏等待对话框
      */
     protected void hideWaitDialog() {
+
     }
 
 
@@ -103,11 +105,22 @@ public abstract class AController extends Activity implements Controller {
     @Override
     public void actionPerformed(ActionDeal actionDeal, ParameterMap params) {
         // TODO Auto-generated method stub
-        dynamicCode.actionPerformed(actionDeal, params);
+        dynamicCode.actionPerformed(actionDeal,null, params);
     }
 
+    public void actionPerformed(ActionDeal actionDeal, String... arg) {
+        // TODO Auto-generated method stub
+        dynamicCode.actionPerformed(actionDeal,null, new ParameterMap(arg));
+    }
+
+    public void actionPerformed(ActionDeal actionDeal, DataParser dataParser, String... arg) {
+        // TODO Auto-generated method stub
+        dynamicCode.actionPerformed(actionDeal,dataParser, new ParameterMap(arg));
+    }
+
+
     /**
-     * 默认接受act方法，如需扩展，在子类中覆盖此方法
+     * 默认结束act方法，如需扩展，在子类中覆盖此方法
      */
     protected void back() {
         popController();

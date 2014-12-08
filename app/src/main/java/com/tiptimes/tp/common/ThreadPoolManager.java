@@ -1,6 +1,5 @@
 package com.tiptimes.tp.common;
 
-import com.tiptimes.tp.constant.Constants;
 import com.tiptimes.tp.controller.Controller;
 import com.tiptimes.tp.util.L;
 
@@ -41,14 +40,10 @@ public class ThreadPoolManager {
 	public void execActions(ActionInfo acitonInfo){
 		ActionService actionService = new ActionService(acitonInfo);
 		//如果线程队列里面已在执行当前action则拒绝执行
-		if(hasTask(acitonInfo)){
-			 ActionBundle ab = new ActionBundle();
-			 ab.isNomal =false;
-			 ab.msg = Constants.MSG_ONTASK;
-		}else{
-			addTask(actionService);
-			executorService.execute(actionService);	
-		}
+		if(!hasTask(acitonInfo)){
+            addTask(actionService);
+            executorService.execute(actionService);
+        }
 		L.d(L.TAG,"当前Action任务数量:"+actionTask.size()+"个");
 	}
 

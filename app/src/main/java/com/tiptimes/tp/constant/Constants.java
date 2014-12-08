@@ -7,12 +7,7 @@ public class Constants {
 	 public static String MSG_ONTASK = "请求正在执行，稍等一会吧！";
 
 
-    /**
-     * 通用的json解析字段
-     */
-	 public final static String SERVER_JSON_STAT_STATUS = "status";//状态值
-	 public final static String SERVER_JSON_STAT_DATA = "data"; //数据
-	 public final static String SERVER_JSON_STAT_MSG = "msg";  //信息
+
 
     /**
      * 控制器状态

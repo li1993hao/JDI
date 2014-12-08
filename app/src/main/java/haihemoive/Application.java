@@ -1,5 +1,6 @@
 package haihemoive;
 
+import com.tiptimes.tp.Db.Dao;
 import com.tiptimes.tp.Db.DbHelper;
 import com.tiptimes.tp.Db.DbListener;
 import com.tiptimes.tp.Db.User;
@@ -36,12 +37,18 @@ public class Application extends android.app.Application {
 
 
 class DbConfig implements DbListener{
-    private final static int VERSION = 3;
+    private final static int VERSION = 0;
     private final static String DATABASENAME="JDI";
 
     @Override
     public void onCreate(DbHelper dh ) {
+
         dh.creatTable(User.class);
+        Dao<User> userDao = new Dao<User>();
+
+        User user = new User();
+        user.setAge(1);
+        user.save();
     }
 
     @Override

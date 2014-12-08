@@ -3,9 +3,9 @@ package com.tiptimes.tp.common;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.view.animation.AnimationSet;
 
 import com.tiptimes.tp.constant.Constants;
-import haihemoive.Application;
 import com.tiptimes.tp.util.HttpUtil;
 import com.tiptimes.tp.util.L;
 
@@ -16,12 +16,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 
+import haihemoive.Application;
+
 /**
  * 图片下载线程
  */
 public class ImageLoadService implements Runnable,ControllerObserver {
 	private ImageLoadInfo imageLoadInfo;
-	private int controllerStatus = Constants.CONTROLLER_STATUS_HOLDER;
+	private volatile int controllerStatus = Constants.CONTROLLER_STATUS_HOLDER;
 
 	public ImageLoadService(ImageLoadInfo imageLoadInfo){
 		this.imageLoadInfo = imageLoadInfo;
@@ -73,6 +75,10 @@ public class ImageLoadService implements Runnable,ControllerObserver {
         imageLoadInfo.getOnImageLoadListener().loaded(bitmap.getBitmap(), imageLoadInfo.getUrl());
 	}
 
+    /**
+     * 有下载进度的图片下载
+     * @throws Exception
+     */
 	private void downLoadWithProgress() throws Exception{
         URL url = new URL(imageLoadInfo.getUrl());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -85,6 +91,7 @@ public class ImageLoadService implements Runnable,ControllerObserver {
         tempFile.createNewFile();
         FileOutputStream f = new FileOutputStream(tempFile);
 
+
         InputStream in = conn.getInputStream();
         byte[] buffer = new byte[1024];
         int len1 = 0;
@@ -92,9 +99,8 @@ public class ImageLoadService implements Runnable,ControllerObserver {
 
         while ((len1 = in.read(buffer)) > 0) {
             total += len1;
-            int pro = (int)((total*100)/lenghtOfFile);
             if(controllerStatus == Constants.CONTROLLER_STATUS_HOLDER){
-                imageLoadInfo.getOnImageLoadListener().loading(pro);
+                imageLoadInfo.getOnImageLoadListener().loading(lenghtOfFile,total);
             }else{
     			L.d(L.TAG, imageLoadInfo.getUrl()+"宿主控制器destroy!");
                 tempFile.delete();

@@ -13,6 +13,4 @@ public abstract class XListViewDeal<T>  implements ActionDeal<T>{
 
 	public abstract void onLoadMore();
 
-
-
 }

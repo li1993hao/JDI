@@ -1,8 +1,5 @@
 package com.tiptimes.tp.common;
 
-import org.json.JSONObject;
-
-import com.alibaba.fastjson.JSON;
 import com.tiptimes.tp.constant.Constants;
 import com.tiptimes.tp.util.HttpRespondInfo;
 import com.tiptimes.tp.util.HttpUtil;
@@ -35,7 +32,12 @@ public class ActionService implements Runnable ,ControllerObserver {
 	@Override
 	public void run() {
 
-		HttpRespondInfo res = HttpUtil.postRequest(actionInfo.getUrl(), actionInfo.getParams());
+		HttpRespondInfo res = null;
+        if(actionInfo.getMethod() == ActionInfo.QequestMethod.POST){
+            res = HttpUtil.postRequest(actionInfo.getUrl(), actionInfo.getParams());
+        }else{
+            res = HttpUtil.getRequest(actionInfo.getUrl(), actionInfo.getParams());
+        }
 
 		final ActionBundle actionBundle = new ActionBundle();//请求结果封装对象
 		actionBundle.msg = Constants.ERROR_UNKNOW;
@@ -47,33 +49,16 @@ public class ActionService implements Runnable ,ControllerObserver {
 				actionBundle.data = res.getInfo();
 			}else{
 				try {
-
-					JSONObject json = new JSONObject(res.getInfo());
-					int status = json.getInt(Constants.SERVER_JSON_STAT_STATUS);
-					if(status == 1){
-                        //服务器返回数据正常,status=1表示服务器返回数据状态
-                        //具体取值根据业务需求变动
-                        //默认1是正常，其他为异常
-						actionBundle.isNomal = true;
-
-						if(actionInfo.isList()){
-                            //返回线性集合
-							actionBundle.data=JSON.parseArray(json.get(Constants.SERVER_JSON_STAT_DATA).toString(), actionInfo.getDataClass());
-						}else if(actionInfo.getDataClass().equals(NoData.class)){
-                            //没有返回数据
-                            actionBundle.data=new NoData();
-						}else{
-                            //返回bto对象
-                            actionBundle.data=JSON.parseObject(json.get(Constants.SERVER_JSON_STAT_DATA).toString(), actionInfo.getDataClass());
-                        }
-
-					}else{
-                        actionBundle.isNomal = false;
-                        actionBundle.msg = json.getString(Constants.SERVER_JSON_STAT_MSG);
+                    //采用默认解析器
+                    if(actionInfo.getDataParser() == null){
+                        JDIDataParser jdiDataParser = new JDIDataParser();
+                        jdiDataParser.parse(res.getInfo(),actionBundle,actionInfo);
+                    }else{
+                        //用特定解析器解析
+                        actionInfo.getDataParser().parse(res.getInfo(),actionBundle,actionInfo);
                     }
-
 				} catch (Exception e) {
-                    //数据解析出差
+                    //数据解析出错
 					actionBundle.isNomal = false;
 					actionBundle.msg = Constants.ERROR_DATA;
 				}
@@ -99,7 +84,6 @@ public class ActionService implements Runnable ,ControllerObserver {
 		}
 		ThreadPoolManager.removeTask(this);//从当前任务队列中移除
 	}
-
 
     /**
      * 宿主控制

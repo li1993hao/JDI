@@ -28,7 +28,7 @@ public class Dao<T extends Model> {
     }
 
     public int deleteAll(Class cls) {
-        return delete(cls, null, null);
+        return delete(cls, null);
     }
 
     public int delete(Class cls, String whereClause, String... whereArgs) {
